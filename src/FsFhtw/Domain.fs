@@ -99,14 +99,13 @@ type Response =
     { State: State
       Message: string option }
 
-let rand = System.Random()
-let randomInRange s e = rand.Next(s, e)
+let randomInRange s e = System.Random().Next(s, e)
 
-let selectRandomPokemon': Pokemon =
+let selectRandomPokemon' (): Pokemon =
     pokemons.[randomInRange 0 (List.length pokemons)]
 
 let selectRandomPokemon: Pokemon * Pokemon =
-    (selectRandomPokemon', selectRandomPokemon')
+    (selectRandomPokemon' (), selectRandomPokemon' ())
 
 let selectRandomAttack p: PokemonAttack =
     p.Attacks.[randomInRange 0 (List.length p.Attacks)]
@@ -193,26 +192,31 @@ let attackUpdate (state: State) (attackId: int): Response =
 
     let stateAfterPlayerAttack = performPlayerAttack state selectedAttack
 
-    let messagePlayerAttack = actionToString (List.head stateAfterPlayerAttack.Actions)
+    let messagePlayerAttack =
+        actionToString (List.head stateAfterPlayerAttack.Actions)
 
     match stateAfterPlayerAttack.Pokemon2.Hp with
     | hp when hp > 0 ->
         let stateAfterCpuAttack = performCpuAttack stateAfterPlayerAttack
-        let messageCpuAttack = sprintf "%s\n%s" messagePlayerAttack (actionToString (List.head stateAfterCpuAttack.Actions))
+
+        let messageCpuAttack =
+            sprintf "%s\n%s" messagePlayerAttack (actionToString (List.head stateAfterCpuAttack.Actions))
 
         match stateAfterCpuAttack.Pokemon1.Hp with
         | hp when hp > 0 ->
             { State = stateAfterCpuAttack
               Message = Some messageCpuAttack }
         | _ ->
-            let messagePlayerLost = sprintf "%s\nYou have lost the fight. Better luck next time!" messageCpuAttack
+            let messagePlayerLost =
+                sprintf "%s\nYou have lost the fight. Better luck next time!" messageCpuAttack
 
             { State =
                   { stateAfterCpuAttack with
                         Finished = true }
               Message = Some messagePlayerLost }
     | _ ->
-        let messagePlayerWon = sprintf "%s\nCongratulations you have defeated %s" messagePlayerAttack stateAfterPlayerAttack.Pokemon2.Name
+        let messagePlayerWon =
+            sprintf "%s\nCongratulations you have defeated %s" messagePlayerAttack stateAfterPlayerAttack.Pokemon2.Name
 
         { State =
               { stateAfterPlayerAttack with
