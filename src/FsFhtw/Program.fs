@@ -1,4 +1,6 @@
-﻿[<EntryPoint>]
+﻿open Domain.Logic
+
+[<EntryPoint>]
 let main argv =
     printfn "Welcome to the Pokemon Arena!"
     printfn "Please enter one of the following commands to fight.\n"
@@ -7,10 +9,10 @@ let main argv =
     printfn " - Status (shows the current state of the fight)"
     printfn " - Help (lists all available commands)\n"
 
-    let initialState = Domain.init ()
+    let initialState = init ()
     printfn "Luck chose %s as your pokemon" initialState.Pokemon1.Name
     printfn "Your opponent was given %s\n" initialState.Pokemon2.Name
     printfn "Press CTRL+C to stop the program.\n"
-    printf ">"
+    printf "> "
     Repl.loop initialState
     0 // return an integer exit code

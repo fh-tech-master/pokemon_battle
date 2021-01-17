@@ -2,32 +2,30 @@ module Repl
 
 open System
 open Parser
+open Domain
 
 type Message =
-    | DomainMessage of Domain.Message
+    | DomainMessage of Types.Message
     | HelpRequested
     | NotParsable of string
 
-type State = Domain.State
-type Response = Domain.Response
-
 let read (input: string) =
     match input with
-    | ListAttack -> Domain.ListAttack |> DomainMessage
-    | Attack v -> Domain.Attack v |> DomainMessage
-    | Status -> Domain.Status |> DomainMessage
+    | ListAttack -> Types.ListAttack |> DomainMessage
+    | Attack v -> Types.Attack v |> DomainMessage
+    | Status -> Types.Status |> DomainMessage
     | Help -> HelpRequested
     | ParseFailed -> NotParsable input
 
 open Microsoft.FSharp.Reflection
 
 let createHelpText (): string =
-    FSharpType.GetUnionCases typeof<Domain.Message>
+    FSharpType.GetUnionCases typeof<Types.Message>
     |> Array.map (fun case -> case.Name)
     |> Array.fold (fun prev curr -> prev + " " + curr) ""
     |> (fun s -> s.Trim() |> sprintf "Known commands are: %s")
 
-let evaluate (update: Domain.Message -> State -> Response) (state: State) (msg: Message) =
+let evaluate (update: Types.Message -> Types.State -> Types.Response) (state: Types.State) (msg: Message) =
     match msg with
     | DomainMessage msg ->
         let response = update msg state
@@ -51,15 +49,15 @@ let evaluate (update: Domain.Message -> State -> Response) (state: State) (msg: 
 
         (state, message)
 
-let print (state: State, outputToPrint: string) =
+let print (state: Types.State, outputToPrint: string) =
     printfn "%s\n" outputToPrint
     if not state.Finished then printf "> "
     state
 
-let rec loop (state: State) =
+let rec loop (state: Types.State) =
     if not state.Finished then
         Console.ReadLine()
         |> read
-        |> evaluate Domain.update state
+        |> evaluate Logic.update state
         |> print
         |> loop
