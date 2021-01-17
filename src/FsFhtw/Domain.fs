@@ -87,7 +87,6 @@ let actionToString a: string =
             defender.Hp
             attack.Name
             damageDealt
-//attacker
 
 type State =
     { Pokemon1: Pokemon
@@ -110,23 +109,21 @@ let selectRandomPokemon: Pokemon * Pokemon =
 let selectRandomAttack p: PokemonAttack =
     p.Attacks.[randomInRange 0 (List.length p.Attacks)]
 
-let init (): State =
-    let (pokemon1, pokemon2) = selectRandomPokemon
-
-    { Pokemon1 = pokemon1
-      Pokemon2 = pokemon2
-      Actions = []
-      Finished = false }
-
 type Message =
     | ListAttack
     | Attack of int
+    | Status
 
 let listAttack (p: Pokemon) =
     p.Attacks
     |> List.mapi (fun i a -> sprintf "(%i) %s [%s] - %i Damage" i a.Name (string a.Type) a.Damage)
     |> List.fold (fun s n -> s + "\n" + n) ""
 
+let statusMessage (p: Pokemon) =
+    sprintf "%s has %i/%i HP" p.Name p.Hp p.InitialHp
+
+let status (state: State) =
+    sprintf "Your Pokemon %s\nCPU`s Pokemon %s" (statusMessage state.Pokemon1) (statusMessage state.Pokemon2)
 
 let calculateAttackAction (attacker: Pokemon) (defender: Pokemon) (attack: PokemonAttack): Action =
     let baseDamage = attack.Damage
@@ -145,6 +142,7 @@ let calculateAttackAction (attacker: Pokemon) (defender: Pokemon) (attack: Pokem
         | (Grass, Fire) -> int (0.5 * float baseDamage)
         | (Grass, Grass) -> int (0.5 * float baseDamage)
         | (Grass, Water) -> 2 * baseDamage
+        | (Grass, Electric) -> int (0.25 * float baseDamage)
         | (Grass, _) -> baseDamage
         | (Electric, Water) -> 2 * baseDamage
         | (Electric, Grass) -> int (0.5 * float baseDamage)
@@ -223,9 +221,20 @@ let attackUpdate (state: State) (attackId: int): Response =
                     Finished = true }
           Message = Some messagePlayerWon }
 
+let init (): State =
+    let (pokemon1, pokemon2) = selectRandomPokemon
+
+    { Pokemon1 = pokemon1
+      Pokemon2 = pokemon2
+      Actions = []
+      Finished = false }
+
 let update (msg: Message) (model: State): Response =
     match msg with
     | ListAttack ->
         { State = model
           Message = Some(listAttack model.Pokemon1) }
+    | Status ->
+        { State = model
+          Message = Some(status model) }
     | Attack x -> attackUpdate model x

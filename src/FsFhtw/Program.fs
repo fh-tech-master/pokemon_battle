@@ -4,6 +4,7 @@ let main argv =
     printfn "Please enter one of the following commands to fight.\n"
     printfn " - ListAttack (list all available attacks of your pokemon)"
     printfn " - Attack [index] (your Pokemon attacks the enemy with the given Attack)"
+    printfn " - Status (shows the current state of the fight)"
     printfn " - Help (lists all available commands)\n"
 
     let initialState = Domain.init ()

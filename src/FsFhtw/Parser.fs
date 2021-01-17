@@ -8,7 +8,7 @@ let safeEquals (it: string) (theOther: string) =
 [<Literal>]
 let HelpLabel = "Help"
 
-let (|ListAttack|Attack|Help|ParseFailed|) (input: string) =
+let (|ListAttack|Attack|Status|Help|ParseFailed|) (input: string) =
     let tryParseInt (arg: string) valueConstructor =
         let (worked, arg') = Int32.TryParse arg
 
@@ -21,6 +21,7 @@ let (|ListAttack|Attack|Help|ParseFailed|) (input: string) =
 
     match parts with
     | [ verb ] when safeEquals verb ("ListAttack") -> ListAttack
+    | [ verb ] when safeEquals verb ("Status") -> Status
     | [ verb; arg ] when safeEquals verb ("Attack") -> tryParseInt arg (fun value -> Attack value)
     | [ verb ] when safeEquals verb ("Help") -> Help
     | _ -> ParseFailed

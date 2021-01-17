@@ -15,6 +15,7 @@ let read (input: string) =
     match input with
     | ListAttack -> Domain.ListAttack |> DomainMessage
     | Attack v -> Domain.Attack v |> DomainMessage
+    | Status -> Domain.Status |> DomainMessage
     | Help -> HelpRequested
     | ParseFailed -> NotParsable input
 
@@ -52,8 +53,7 @@ let evaluate (update: Domain.Message -> State -> Response) (state: State) (msg: 
 
 let print (state: State, outputToPrint: string) =
     printfn "%s\n" outputToPrint
-    printf "> "
-
+    if not state.Finished then printf "> "
     state
 
 let rec loop (state: State) =
