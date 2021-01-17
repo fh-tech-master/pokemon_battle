@@ -193,37 +193,31 @@ let attackUpdate (state: State) (attackId: int): Response =
 
     let stateAfterPlayerAttack = performPlayerAttack state selectedAttack
 
-    let mutable message =
-        actionToString (List.last stateAfterPlayerAttack.Actions)
+    let messagePlayerAttack = actionToString (List.head stateAfterPlayerAttack.Actions)
 
     match stateAfterPlayerAttack.Pokemon2.Hp with
     | hp when hp > 0 ->
         let stateAfterCpuAttack = performCpuAttack stateAfterPlayerAttack
-        message <- sprintf "%s\n%s" message (actionToString (List.last stateAfterCpuAttack.Actions))
+        let messageCpuAttack = sprintf "%s\n%s" messagePlayerAttack (actionToString (List.head stateAfterCpuAttack.Actions))
 
         match stateAfterCpuAttack.Pokemon1.Hp with
         | hp when hp > 0 ->
             { State = stateAfterCpuAttack
-              Message = Some message }
+              Message = Some messageCpuAttack }
         | _ ->
-            message <- sprintf "%s\nYou have lost the fight. Better luck next time!" message
+            let messagePlayerLost = sprintf "%s\nYou have lost the fight. Better luck next time!" messageCpuAttack
 
             { State =
                   { stateAfterCpuAttack with
                         Finished = true }
-              Message = Some message }
+              Message = Some messagePlayerLost }
     | _ ->
-        message <- (sprintf "%s\nCongratulations you have defeated %s" message stateAfterPlayerAttack.Pokemon2.Name)
+        let messagePlayerWon = sprintf "%s\nCongratulations you have defeated %s" messagePlayerAttack stateAfterPlayerAttack.Pokemon2.Name
 
         { State =
               { stateAfterPlayerAttack with
                     Finished = true }
-          Message = Some message }
-
-        { State =
-              { stateAfterPlayerAttack with
-                    Finished = true }
-          Message = Some message }
+          Message = Some messagePlayerWon }
 
 let update (msg: Message) (model: State): Response =
     match msg with
