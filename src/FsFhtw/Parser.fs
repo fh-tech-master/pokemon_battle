@@ -22,7 +22,7 @@ let (|SelectGameMode|StartFight|Escape|ListAttack|Attack|Status|ParseFailed|) (i
     | verb::args when safeEquals verb ("SelectGameMode") -> 
         match args with
         | a::xs when safeEquals a ("Random") -> SelectGameMode RandomSelect
-        | a::xs when safeEquals a ("Selection") -> tryParseInt xs.Head (fun value -> SelectGameMode (SelectionSelect value))
+        | a::xs when safeEquals a ("Selection") && xs.Length > 0 -> tryParseInt xs.Head (fun value -> SelectGameMode (SelectionSelect value))
         | _ -> ParseFailed
     | verb::args when safeEquals verb ("StartFight") -> StartFight
     | verb::args when safeEquals verb ("Escape") -> Escape

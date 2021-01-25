@@ -78,6 +78,7 @@ module Logic =
 
     let randomInRange s e = System.Random().Next(s, e)
 
+    // In F# functions are supposed to be pure so a function without arguments is considered as final value.
     let selectRandomPokemon' (): Pokemon =
         pokemons.[randomInRange 0 (List.length pokemons)]
 
