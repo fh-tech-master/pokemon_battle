@@ -7,15 +7,16 @@ open Domain
 type Message =
     | DomainMessage of Types.Message
     | HelpRequested
-    | NotParsable of string
 
 let read (input: string) =
     match input with
-    | ListAttack -> Types.ListAttack |> DomainMessage
-    | Attack v -> Types.Attack v |> DomainMessage
-    | Status -> Types.Status |> DomainMessage
-    | Help -> HelpRequested
-    | ParseFailed -> NotParsable input
+    | StartFight       -> Types.StartFight       |> DomainMessage
+    | Escape           -> Types.Escape           |> DomainMessage
+    | ListAttack       -> Types.ListAttack       |> DomainMessage
+    | Attack v         -> Types.Attack v         |> DomainMessage
+    | SelectGameMode v -> Types.SelectGameMode v |> DomainMessage
+    | Status           -> Types.Status           |> DomainMessage
+    | ParseFailed      -> HelpRequested
 
 open Microsoft.FSharp.Reflection
 
@@ -40,24 +41,48 @@ let evaluate (update: Types.Message -> Types.State -> Types.Response) (state: Ty
     | HelpRequested ->
         let message = createHelpText ()
         (state, message)
-    | NotParsable originalInput ->
-        let message =
-            sprintf
-                """"%s" was not parsable. %s"""
-                originalInput
-                "You can get information about known commands by typing \"Help\""
 
-        (state, message)
+let neutralPhaseText =
+    sprintf 
+        "%s\n %s\n %s\n %s\n"
+        "Please enter one of the following commands" 
+        " - StartFight (starts the pokemon fight)"
+        " - ListAttack (list all available attacks of your pokemon)" 
+        " - Status (shows the current state of the fight)"
 
+let fightingPhaseText = 
+    sprintf 
+        "%s\n %s\n %s\n %s\n %s\n"
+        "Please enter one of the following commands" 
+        " - ListAttack (list all available attacks of your pokemon)" 
+        " - Attack [index] (your Pokemon attacks the enemy with the given Attack)" 
+        " - Status (shows the current state of the fight)"
+        " - Escape (leaves the fight and resets Pokemon HP)"
+
+let selectGameModeText =
+    sprintf
+        "%s\n%s\n%s"
+        " - SelectGameMode Random (to let the program choose which pokemon have to fight)"
+        " - SelectGameMode Selection [index] (to choose your pokemon from the list)"
+        Logic.printAllPokemons
+    
+let gameText (state: Types.State) =
+    match state.GameMode with
+    | Types.GameMode.NotSelected -> 
+        selectGameModeText
+    | _ -> match state.Phase with 
+           | Types.Phase.Fighting -> fightingPhaseText
+           | Types.Phase.Neutral -> neutralPhaseText
+                   
 let print (state: Types.State, outputToPrint: string) =
     printfn "%s\n" outputToPrint
-    if not state.Finished then printf "> "
+    printfn "%s\n" (gameText state)
+    printf "> "
     state
 
 let rec loop (state: Types.State) =
-    if not state.Finished then
-        Console.ReadLine()
-        |> read
-        |> evaluate Logic.update state
-        |> print
-        |> loop
+      Console.ReadLine()
+      |> read
+      |> evaluate Logic.update state
+      |> print
+      |> loop
