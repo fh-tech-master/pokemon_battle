@@ -85,9 +85,9 @@ module Logic =
     let selectRandomAttack p: PokemonAttack =
         p.Attacks.[randomInRange 0 (List.length p.Attacks)]
 
-    let listAttack (state: State) (p: Pokemon) =
+    let listAttack (state: State) =
         let attackList = 
-          p.Attacks
+          state.Pokemon1.Attacks
           |> List.mapi (fun i a -> sprintf "(%i) %s [%s] - %i Damage" i a.Name (string a.Type) a.Damage)
           |> List.fold (fun s n -> s + "\n" + n) ""
         { State = state
@@ -256,6 +256,6 @@ module Logic =
               | SelectGameMode r -> selectGameMode model r
               | StartFight       -> startFight model
               | Escape           -> escapeFight model
-              | ListAttack       -> listAttack model model.Pokemon1
+              | ListAttack       -> listAttack model
               | Status           -> status model
               | Attack x         -> attackUpdate model x
